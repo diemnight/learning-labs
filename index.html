@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Learning Labs — Challenge Sign-up</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f5;
+    --bg3: #ebebeb;
+    --text: #111111;
+    --text2: #555555;
+    --text3: #888888;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --info-bg: #e8f0fe;
+    --info-text: #1a56cc;
+    --success-bg: #e6f4ea;
+    --success-text: #1e7e34;
+    --danger-bg: #fce8e8;
+    --danger-text: #c0392b;
+    --warning-bg: #fef3e2;
+    --warning-text: #b45309;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --accent: #0d6efd;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --bg2: #242424;
+      --bg3: #2e2e2e;
+      --text: #f0f0f0;
+      --text2: #aaaaaa;
+      --text3: #777777;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+      --info-bg: #1a2a4a;
+      --info-text: #7eb3ff;
+      --success-bg: #1a2e1a;
+      --success-text: #6fcf6f;
+      --danger-bg: #2e1a1a;
+      --danger-text: #f08080;
+      --warning-bg: #2e2210;
+      --warning-text: #f0b860;
+    }
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg2);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .header p { font-size: 15px; color: var(--text2); line-height: 1.6; }
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+  .logo-badge { background: #0d1b2a; color: #00c9a7; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 5px 12px; border-radius: var(--radius); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 600; color: var(--text); }
+  .signup-box { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; }
+  .signup-box h2 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .signup-box p { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+  .input-row { display: flex; gap: 8px; }
+  .input-row input { flex: 1; font-size: 14px; padding: 9px 12px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); outline: none; }
+  .input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(13,110,253,0.15); }
+  .msg { font-size: 13px; margin-top: 10px; padding: 9px 12px; border-radius: var(--radius); display: none; }
+  .msg.success { background: var(--success-bg); color: var(--success-text); display: block; }
+  .msg.error { background: var(--danger-bg); color: var(--danger-text); display: block; }
+  .msg.info { background: var(--bg2); color: var(--text2); display: block; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
+  .challenges { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; transition: border-color 0.15s; }
+  .card.selected { border: 2px solid var(--accent); }
+  .card.full { opacity: 0.6; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .card-left { flex: 1; min-width: 0; }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 7px; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: var(--radius); }
+  .badge-project { background: var(--info-bg); color: var(--info-text); }
+  .badge-type { background: var(--bg2); color: var(--text2); }
+  .badge-competitive { background: var(--warning-bg); color: var(--warning-text); }
+  .badge-open { background: var(--success-bg); color: var(--success-text); }
+  .badge-full { background: var(--danger-bg); color: var(--danger-text); }
+  .card-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .slots { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .slots.full { color: var(--danger-text); }
+  .btn { font-size: 13px; padding: 7px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); cursor: pointer; font-weight: 500; white-space: nowrap; transition: background 0.12s; }
+  .btn:hover:not(:disabled) { background: var(--bg2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.selected { background: var(--info-bg); color: var(--info-text); border-color: var(--info-text); }
+  .brief { font-size: 13px; color: var(--text2); line-height: 1.65; margin-bottom: 10px; }
+  .deliverable { font-size: 12px; color: var(--text3); border-left: 3px solid var(--border2); padding-left: 10px; margin-bottom: 10px; line-height: 1.5; }
+  .deliverable strong { color: var(--text2); }
+  .participants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+  .chip { display: flex; align-items: center; gap: 6px; font-size: 12px; background: var(--bg2); border-radius: var(--radius); padding: 4px 10px; color: var(--text); }
+  .avatar { width: 20px; height: 20px; border-radius: 50%; background: var(--info-bg); color: var(--info-text); font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .loading { font-size: 13px; color: var(--text3); padding: 12px 0; display: flex; align-items: center; gap: 8px; }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .admin-section { border-top: 1px solid var(--border); padding-top: 1.25rem; margin-top: 1rem; }
+  .admin-toggle { background: none; border: none; color: var(--text3); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; }
+  .admin-toggle:hover { color: var(--text); }
+  .admin-panel { margin-top: 1rem; display: none; }
+  .admin-panel.open { display: block; }
+  .admin-panel p { font-size: 13px; color: var(--text2); margin-bottom: 10px; }
+  .admin-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .admin-row input, .admin-row select { font-size: 13px; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); flex: 1; min-width: 130px; outline: none; }
+  .admin-row input:focus, .admin-row select:focus { border-color: var(--accent); }
+  .btn-sm { font-size: 12px; padding: 5px 12px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); cursor: pointer; }
+  .btn-sm:hover { background: var(--bg2); }
+  .btn-danger { border-color: var(--danger-text); color: var(--danger-text); }
+  .admin-msg { font-size: 13px; margin-top: 8px; padding: 8px 12px; border-radius: var(--radius); display: none; }
+  .admin-msg.success { background: var(--success-bg); color: var(--success-text); display: block; }
+  .admin-msg.error { background: var(--danger-bg); color: var(--danger-text); display: block; }
+  .refresh-row { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .refresh-row span { font-size: 12px; color: var(--text3); }
+  footer { text-align: center; font-size: 12px; color: var(--text3); margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="logo">
+    <span class="logo-badge">ROBOTUM ACADEMY</span>
+  </div>
+
+  <div class="header">
+    <h1>Learning Labs — Challenge Sign-up</h1>
+    <p>Read each challenge brief below. Enter your name, then click <strong>Select</strong> on the challenge you want to tackle. You can only sign up for one challenge. Click again to deselect.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total challenges</div><div class="stat-value" id="stat-total">4</div></div>
+    <div class="stat"><div class="stat-label">Signed up</div><div class="stat-value" id="stat-taken">—</div></div>
+    <div class="stat"><div class="stat-label">Spots left</div><div class="stat-value" id="stat-remaining">—</div></div>
+  </div>
+
+  <div class="signup-box">
+    <h2>Your name</h2>
+    <p>Enter your full name so we know who's picking what.</p>
+    <div class="input-row">
+      <input type="text" id="name-input" placeholder="e.g. Maria Schmidt" maxlength="50" autocomplete="off" />
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="section-label">Cycle 1 Challenges</div>
+
+  <div id="loading" class="loading">
+    <span class="spin">↻</span> Loading signups from Google Sheets...
+  </div>
+
+  <div class="challenges" id="challenges-list"></div>
+
+  <div class="admin-section">
+    <button class="admin-toggle" onclick="toggleAdmin()">⚙ Coordinator tools</button>
+    <div class="admin-panel" id="admin-panel">
+      <p>Manually add or remove a participant across any challenge.</p>
+      <div class="admin-row">
+        <input type="text" id="admin-name" placeholder="Participant name" />
+        <select id="admin-challenge">
+          <option value="">Select challenge</option>
+        </select>
+      </div>
+      <div class="admin-row">
+        <button class="btn-sm" onclick="adminAdd()">+ Add</button>
+        <button class="btn-sm btn-danger" onclick="adminRemove()">✕ Remove</button>
+      </div>
+      <div class="admin-msg" id="admin-msg"></div>
+      <div class="refresh-row">
+        <button class="btn-sm" onclick="loadData()">↻ Refresh data</button>
+        <span id="last-updated"></span>
+      </div>
+    </div>
+  </div>
+
+  <footer>RoboTUM Academy · Learning Labs · Summer Semester 2025</footer>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbG7jS1xX44HNiWt5ue8qr9eZsbxo7hwS4HmgVzQnxhjAwL5p_y6V647lJRCJ2w11a/exec";
+
+const CHALLENGES = [
+  {
+    id: "YOLOv8 vs Classical Detector",
+    project: "PlastiX",
+    type: "Research & Coding",
+    competitive: false,
+    maxSlots: 3,
+    time: "4–6 hrs",
+    brief: "Benchmark YOLOv8-nano against a classical HOG+SVM detector on a plastic waste dataset. No training needed — inference only. Run both detectors end-to-end and compare their performance on the same data.",
+    deliverable: "Results table (precision, recall, FPS for both detectors) + half-page summary of tradeoffs for the PlastiX team"
+  },
+  {
+    id: "Simulate a pick-and-place arm",
+    project: "PlastiX",
+    type: "Coding & Maths",
+    competitive: false,
+    maxSlots: 2,
+    time: "5–7 hrs",
+    brief: "Model a 2-DOF planar arm using forward and inverse kinematics in a Jupyter notebook. Visualize at least 3 target configurations. Everything runs locally — no hardware or robot access needed.",
+    deliverable: "Jupyter notebook with FK + IK implementation + visualizations, plus a short writeup on how this would scale to a real 6-DOF arm"
+  },
+  {
+    id: "CAD Design — Frail Alignment Mechanism",
+    project: "Hestia",
+    type: "CAD Design",
+    competitive: false,
+    maxSlots: 2,
+    time: "TBD",
+    brief: "Design a frail alignment mechanism for Hestia's countertop system, including a coil array layout for the manipulator-based setup. You'll work from materials and context shared by the Hestia team.",
+    deliverable: "CAD file (SolidWorks or equivalent) + annotated design rationale document explaining your choices"
+  },
+  {
+    id: "CAD Design — Robotic Fingers",
+    project: "Creative Robotics",
+    type: "Competitive CAD",
+    competitive: true,
+    maxSlots: 0,
+    time: "TBD",
+    brief: "Design a set of robotic fingers optimized for dexterity and manufacturability. This is a competitive challenge — all submissions will be reviewed and judged by the Creative Robotics team. Best design wins.",
+    deliverable: "CAD file (SolidWorks or equivalent) + short pitch document explaining your design decisions and tradeoffs"
+  }
+];
+
+let signups = {};
+CHALLENGES.forEach(c => signups[c.id] = []);
+let isLoading = false;
+
+const $ = id => document.getElementById(id);
+const getName = () => $("name-input").value.trim();
+
+function showMsg(text, type) {
+  const el = $("msg");
+  el.textContent = text;
+  el.className = "msg " + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = "msg"; el.textContent = ""; }, 4500);
+}
+
+function getUserChallenge(name) {
+  for (const id in signups) {
+    if (signups[id].map(n => n.toLowerCase()).includes(name.toLowerCase())) return id;
+  }
+  return null;
+}
+
+function isFull(c) { return c.maxSlots > 0 && signups[c.id].length >= c.maxSlots; }
+
+function slotsText(c) {
+  if (c.maxSlots === 0) return "Unlimited spots";
+  const left = c.maxSlots - signups[c.id].length;
+  return left + " spot" + (left !== 1 ? "s" : "") + " left";
+}
+
+function initials(name) {
+  return name.split(" ").filter(Boolean).map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function updateStats() {
+  const taken = Object.values(signups).reduce((a, v) => a + v.length, 0);
+  const rem = CHALLENGES.reduce((a, c) => c.maxSlots === 0 ? a : a + Math.max(0, c.maxSlots - signups[c.id].length), 0);
+  $("stat-taken").textContent = taken;
+  $("stat-remaining").textContent = rem;
+}
+
+function render() {
+  const name = getName();
+  const userChallenge = name ? getUserChallenge(name) : null;
+  const list = $("challenges-list");
+  list.innerHTML = "";
+
+  CHALLENGES.forEach(c => {
+    const full = isFull(c);
+    const isUserPick = userChallenge === c.id;
+    const alreadyElsewhere = !!(userChallenge && userChallenge !== c.id);
+
+    const card = document.createElement("div");
+    card.className = "card" + (isUserPick ? " selected" : "") + (full && !isUserPick ? " full" : "");
+
+    const chips = signups[c.id].map(n =>
+      `<div class="chip"><div class="avatar">${initials(n)}</div>${n}</div>`
+    ).join("");
+
+    const canClick = name && !isLoading && !alreadyElsewhere && (!full || isUserPick);
+    const btnClass = "btn" + (isUserPick ? " selected" : "");
+    const btnLabel = isUserPick ? "✓ Selected" : "Select";
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-left">
+          <div class="badges">
+            <span class="badge badge-project">${c.project}</span>
+            <span class="badge badge-type">${c.type}</span>
+            ${c.competitive ? '<span class="badge badge-competitive">competitive</span>' : ""}
+            ${full ? '<span class="badge badge-full">full</span>' : '<span class="badge badge-open">open</span>'}
+          </div>
+          <div class="card-title">${c.id}</div>
+        </div>
+        <div class="card-right">
+          <span class="slots${full ? " full" : ""}">${slotsText(c)}</span>
+          <button class="${btnClass}" ${canClick ? "" : "disabled"} onclick="handleSelect('${c.id}')">${btnLabel}</button>
+        </div>
+      </div>
+      <div class="brief">${c.brief}</div>
+      <div class="deliverable"><strong>Deliverable:</strong> ${c.deliverable}</div>
+      ${chips ? `<div class="participants">${chips}</div>` : ""}
+    `;
+    list.appendChild(card);
+  });
+
+  updateStats();
+
+  const sel = $("admin-challenge");
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select challenge</option>';
+  CHALLENGES.forEach(c => {
+    const o = document.createElement("option");
+    o.value = c.id;
+    o.textContent = c.id;
+    if (c.id === prev) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+async function fetchSheet(params) {
+  const url = SCRIPT_URL + "?" + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function loadData() {
+  isLoading = true;
+  $("loading").style.display = "flex";
+  try {
+    const result = await fetchSheet({ action: "get" });
+    if (result.success) {
+      CHALLENGES.forEach(c => signups[c.id] = []);
+      result.data.forEach(row => {
+        if (signups[row.challenge] !== undefined) {
+          const existing = signups[row.challenge].map(n => n.toLowerCase());
+          if (!existing.includes(row.name.toLowerCase())) {
+            signups[row.challenge].push(row.name);
+          }
+        }
+      });
+      const now = new Date();
+      $("last-updated").textContent = "Last updated: " + now.toLocaleTimeString();
+    }
+  } catch (e) {
+    showMsg("Could not reach Google Sheets — showing cached data.", "error");
+  }
+  isLoading = false;
+  $("loading").style.display = "none";
+  render();
+}
+
+async function handleSelect(challengeId) {
+  const name = getName();
+  if (!name) { showMsg("Please enter your name first.", "error"); return; }
+  const existing = getUserChallenge(name);
+  const c = CHALLENGES.find(x => x.id === challengeId);
+
+  if (existing === challengeId) {
+    signups[challengeId] = signups[challengeId].filter(n => n.toLowerCase() !== name.toLowerCase());
+    showMsg("You've been removed from: " + challengeId, "info");
+    fetchSheet({ action: "signup", name, challenge: "remove", project: "" });
+  } else {
+    if (isFull(c)) { showMsg("This challenge is full — pick another one.", "error"); return; }
+    if (existing) signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
+    signups[challengeId].push(name);
+    showMsg("You're signed up for: " + challengeId + " 🎉", "success");
+    fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project });
+  }
+  render();
+}
+
+function toggleAdmin() {
+  $("admin-panel").classList.toggle("open");
+}
+
+function showAdminMsg(text, type) {
+  const el = $("admin-msg");
+  el.textContent = text;
+  el.className = "admin-msg " + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = "admin-msg"; el.textContent = ""; }, 4000);
+}
+
+async function adminAdd() {
+  const name = $("admin-name").value.trim();
+  const cid = $("admin-challenge").value;
+  if (!name || !cid) { showAdminMsg("Fill in both name and challenge.", "error"); return; }
+  const existing = getUserChallenge(name);
+  if (existing) signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
+  const c = CHALLENGES.find(x => x.id === cid);
+  signups[cid].push(name);
+  await fetchSheet({ action: "signup", name, challenge: cid, project: c.project });
+  showAdminMsg(name + " added to: " + cid, "success");
+  $("admin-name").value = "";
+  render();
+}
+
+async function adminRemove() {
+  const name = $("admin-name").value.trim();
+  if (!name) { showAdminMsg("Enter a name to remove.", "error"); return; }
+  const existing = getUserChallenge(name);
+  if (!existing) { showAdminMsg("Name not found in any challenge.", "error"); return; }
+  signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
+  await fetchSheet({ action: "signup", name, challenge: "remove", project: "" });
+  showAdminMsg(name + " removed successfully.", "success");
+  $("admin-name").value = "";
+  render();
+}
+
+$("name-input").addEventListener("input", render);
+loadData();
+</script>
+</body>
+</html>
