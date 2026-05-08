@@ -16,11 +16,11 @@ Each cycle runs for 4–5 weeks and ends with a showcase where participants pres
 
 ## How it works
 
-1. Participant opens the link
-2. Enters their name
+1. Participant opens the link - https://diemnight.github.io/learning-labs/
+2. Enters their name and email
 3. Reads through the challenge briefs
 4. Clicks **Select** on the one they want
-5. Their name is saved instantly to the Google Sheet
+5. Their name is saved instantly to the Google Sheet and the challenge brief is sent to their email
 
 Each person can only sign up for one challenge. Challenges can have a slot limit — once full, they're marked as closed.
 
