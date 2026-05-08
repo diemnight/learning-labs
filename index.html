@@ -144,10 +144,13 @@
   </div>
 
   <div class="signup-box">
-    <h2>Your name</h2>
-    <p>Enter your full name so we know who's picking what.</p>
+    <h2>Your details</h2>
+    <p>Enter your name and RoboTUM email. When you select a challenge, the full brief will be sent to your inbox.</p>
+    <div class="input-row" style="margin-bottom:8px;">
+      <input type="text" id="name-input" placeholder="Full name e.g. Maria Schmidt" maxlength="50" autocomplete="off" />
+    </div>
     <div class="input-row">
-      <input type="text" id="name-input" placeholder="e.g. Maria Schmidt" maxlength="50" autocomplete="off" />
+      <input type="email" id="email-input" placeholder="RoboTUM email e.g. maria@robotum.info" maxlength="80" autocomplete="off" />
     </div>
     <div class="msg" id="msg"></div>
   </div>
@@ -237,6 +240,7 @@ let isLoading = false;
 
 const $ = id => document.getElementById(id);
 const getName = () => $("name-input").value.trim();
+const getEmail = () => $("email-input").value.trim();
 
 function showMsg(text, type) {
   const el = $("msg");
@@ -365,7 +369,10 @@ async function loadData() {
 
 async function handleSelect(challengeId) {
   const name = getName();
+  const email = getEmail();
   if (!name) { showMsg("Please enter your name first.", "error"); return; }
+  if (!email) { showMsg("Please enter your RoboTUM email — we'll send you the full brief.", "error"); return; }
+  if (!email.includes("@")) { showMsg("Please enter a valid email address.", "error"); return; }
   const existing = getUserChallenge(name);
   const c = CHALLENGES.find(x => x.id === challengeId);
 
@@ -377,8 +384,8 @@ async function handleSelect(challengeId) {
     if (isFull(c)) { showMsg("This challenge is full — pick another one.", "error"); return; }
     if (existing) signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
     signups[challengeId].push(name);
-    showMsg("You're signed up for: " + challengeId + " 🎉", "success");
-    fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project });
+    showMsg("You're signed up! Check your inbox for the full brief. 🎉", "success");
+    fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project, email });
   }
   render();
 }
