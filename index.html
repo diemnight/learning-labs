@@ -383,8 +383,14 @@ async function handleSelect(challengeId) {
   render();
 }
 
+let adminUnlocked = false;
 function toggleAdmin() {
-  $("admin-panel").classList.toggle("open");
+  const panel = $("admin-panel");
+  if (panel.classList.contains("open")) { panel.classList.remove("open"); return; }
+  if (adminUnlocked) { panel.classList.add("open"); return; }
+  const pw = prompt("Enter coordinator password:");
+  if (pw === "football123456") { adminUnlocked = true; panel.classList.add("open"); }
+  else { alert("Incorrect password."); }
 }
 
 function showAdminMsg(text, type) {
