@@ -1,6 +1,6 @@
 # 🔬 Learning Labs — Challenge Sign-up
 
-**Part of the RoboTUM Academy · Summer Semester 2025**
+**Part of the RoboTUM Academy · Summer Semester 2026**
 
 A lightweight web app where RoboTUM Academy participants can browse this semester's challenges, read the full brief, and sign up for the one they want to tackle. All sign-ups are stored in real time to a Google Sheet.
 
