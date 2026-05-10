@@ -213,14 +213,15 @@ const CHALLENGES = [
     deliverable: "Jupyter notebook with FK + IK implementation + visualizations, plus a short writeup on how this would scale to a real 6-DOF arm"
   },
   {
-    id: "CAD Design — Frail Alignment Mechanism",
+    id: "Hestia Challenge — Coming Soon",
     project: "Hestia",
     type: "CAD Design",
     competitive: false,
-    maxSlots: 2,
+    maxSlots: 0,
     time: "TBD",
-    brief: "Design a frail alignment mechanism for Hestia's countertop system, including a coil array layout for the manipulator-based setup. You'll work from materials and context shared by the Hestia team.",
-    deliverable: "CAD file (SolidWorks or equivalent) + annotated design rationale document explaining your choices"
+    comingSoon: true,
+    brief: "A challenge from the Hestia team is on its way. Check back soon for the full brief and details.",
+    deliverable: "TBD"
   },
   {
     id: "CAD Design — Robotic Fingers",
@@ -288,13 +289,13 @@ function render() {
     const alreadyElsewhere = !!(userChallenge && userChallenge !== c.id);
 
     const card = document.createElement("div");
-    card.className = "card" + (isUserPick ? " selected" : "") + (full && !isUserPick ? " full" : "");
+    card.className = "card" + (isUserPick ? " selected" : "") + (full && !isUserPick ? " full" : "") + (c.comingSoon ? " full" : "");
 
     const chips = signups[c.id].map(n =>
       `<div class="chip"><div class="avatar">${initials(n)}</div>${n}</div>`
     ).join("");
 
-    const canClick = name && !isLoading && !alreadyElsewhere && (!full || isUserPick);
+    const canClick = name && !isLoading && !alreadyElsewhere && (!full || isUserPick) && !c.comingSoon;
     const btnClass = "btn" + (isUserPick ? " selected" : "");
     const btnLabel = isUserPick ? "✓ Selected" : "Select";
 
@@ -305,7 +306,7 @@ function render() {
             <span class="badge badge-project">${c.project}</span>
             <span class="badge badge-type">${c.type}</span>
             ${c.competitive ? '<span class="badge badge-competitive">competitive</span>' : ""}
-            ${full ? '<span class="badge badge-full">full</span>' : '<span class="badge badge-open">open</span>'}
+            ${c.comingSoon ? '<span class="badge" style="background:var(--bg3);color:var(--text3);">coming soon</span>' : (full ? '<span class="badge badge-full">full</span>' : '<span class="badge badge-open">open</span>')}
           </div>
           <div class="card-title">${c.id}</div>
         </div>
