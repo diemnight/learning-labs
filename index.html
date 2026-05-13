@@ -236,7 +236,8 @@ const CHALLENGES = [
 ];
 
 let signups = {};
-CHALLENGES.forEach(c => signups[c.id] = []);
+let waitlists = {};
+CHALLENGES.forEach(c => { signups[c.id] = []; waitlists[c.id] = []; });
 let isLoading = false;
 
 const $ = id => document.getElementById(id);
@@ -295,9 +296,16 @@ function render() {
       `<div class="chip"><div class="avatar">${initials(n)}</div>${n}</div>`
     ).join("");
 
-    const canClick = name && !isLoading && !alreadyElsewhere && (!full || isUserPick) && !c.comingSoon;
-    const btnClass = "btn" + (isUserPick ? " selected" : "");
-    const btnLabel = isUserPick ? "✓ Selected" : "Select";
+    const userOnWaitlist = name ? isWaitlisted(name, c.id) : false;
+    const alreadyWaitlistedElsewhere = !!(getUserWaitlist(name) && getUserWaitlist(name) !== c.id);
+    const waitlistChips = waitlists[c.id] && waitlists[c.id].length > 0
+      ? `<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:11px;color:var(--text3);margin-bottom:4px;">Waitlist (${waitlists[c.id].length})</div>` +
+        waitlists[c.id].map(n => `<div class="chip" style="opacity:0.6;"><div class="avatar" style="background:var(--bg3);color:var(--text3);">${initials(n)}</div>${n}</div>`).join("")
+      : "";
+
+    const canClick = name && !isLoading && !c.comingSoon && !(alreadyElsewhere && !userOnWaitlist) && !(alreadyWaitlistedElsewhere && !isUserPick);
+    const btnClass = "btn" + ((isUserPick || userOnWaitlist) ? " selected" : "");
+    const btnLabel = c.comingSoon ? "Coming soon" : (isUserPick ? "✓ Selected" : (userOnWaitlist ? "✓ Waitlisted" : (full ? "Join waitlist" : "Select")));
 
     card.innerHTML = `
       <div class="card-top">
@@ -317,7 +325,7 @@ function render() {
       </div>
       <div class="brief">${c.brief}</div>
       <div class="deliverable"><strong>Deliverable:</strong> ${c.deliverable}</div>
-      ${chips ? `<div class="participants">${chips}</div>` : ""}
+      ${chips || waitlistChips ? `<div class="participants">${chips}${waitlistChips ? waitlistChips : ""}</div>` : ""}
     `;
     list.appendChild(card);
   });
@@ -348,12 +356,17 @@ async function loadData() {
   try {
     const result = await fetchSheet({ action: "get" });
     if (result.success) {
-      CHALLENGES.forEach(c => signups[c.id] = []);
+      CHALLENGES.forEach(c => { signups[c.id] = []; waitlists[c.id] = []; });
       result.data.forEach(row => {
-        if (signups[row.challenge] !== undefined) {
-          const existing = signups[row.challenge].map(n => n.toLowerCase());
-          if (!existing.includes(row.name.toLowerCase())) {
-            signups[row.challenge].push(row.name);
+        if (row.status === "waitlist") {
+          if (waitlists[row.challenge] !== undefined) {
+            const existing = waitlists[row.challenge].map(n => n.toLowerCase());
+            if (!existing.includes(row.name.toLowerCase())) waitlists[row.challenge].push(row.name);
+          }
+        } else {
+          if (signups[row.challenge] !== undefined) {
+            const existing = signups[row.challenge].map(n => n.toLowerCase());
+            if (!existing.includes(row.name.toLowerCase())) signups[row.challenge].push(row.name);
           }
         }
       });
@@ -368,7 +381,7 @@ async function loadData() {
   render();
 }
 
-function showConfirmModal(challengeId, name, email) {
+function showConfirmModal(challengeId, name, email, isWaitlist) {
   const c = CHALLENGES.find(x => x.id === challengeId);
   const existing = document.getElementById("confirm-modal");
   if (existing) existing.remove();
@@ -378,18 +391,18 @@ function showConfirmModal(challengeId, name, email) {
   modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;";
   modal.innerHTML = `
     <div style="background:var(--bg);border-radius:var(--radius-lg);padding:1.5rem;max-width:460px;width:100%;border:1px solid var(--border2);">
-      <h3 style="font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;">Confirm your selection</h3>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">You're about to sign up for this challenge. The full brief will be sent to your email.</p>
+      <h3 style="font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;">${isWaitlist ? "Join the waitlist" : "Confirm your selection"}</h3>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">${isWaitlist ? "This challenge is full but you can join the waitlist. We'll notify you if a spot opens up." : "You're about to sign up for this challenge. The full brief will be sent to your email."}</p>
       <div style="background:var(--bg2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;">
         <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">${c.project}</div>
         <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;">${c.id}</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:2px;">👤 ${name}</div>
         <div style="font-size:12px;color:var(--text2);">✉️ ${email}</div>
       </div>
-      <p style="font-size:12px;color:var(--text3);margin-bottom:16px;">Once confirmed you can only change your selection by contacting the coordinator.</p>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:16px;">${isWaitlist ? "You'll be notified by Aaron if a spot becomes available." : "Once confirmed you can only change your selection by contacting the coordinator."}</p>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
         <button onclick="document.getElementById('confirm-modal').remove()" style="font-size:13px;padding:8px 18px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);color:var(--text);cursor:pointer;">Cancel</button>
-        <button onclick="confirmSignup('${challengeId}')" style="font-size:13px;padding:8px 18px;border-radius:var(--radius);border:none;background:#0d6efd;color:#fff;cursor:pointer;font-weight:500;">Confirm & sign up</button>
+        <button onclick="confirmSignup('${challengeId}', ${isWaitlist})" style="font-size:13px;padding:8px 18px;border-radius:var(--radius);border:none;background:${isWaitlist ? '#6c757d' : '#0d6efd'};color:#fff;cursor:pointer;font-weight:500;">${isWaitlist ? "Join waitlist" : "Confirm & sign up"}</button>
       </div>
     </div>
   `;
@@ -397,18 +410,38 @@ function showConfirmModal(challengeId, name, email) {
   modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
 }
 
-async function confirmSignup(challengeId) {
+async function confirmSignup(challengeId, isWaitlist) {
   document.getElementById("confirm-modal").remove();
   const name = getName();
   const email = getEmail();
   const existing = getUserChallenge(name);
+  const existingWaitlist = getUserWaitlist(name);
   const c = CHALLENGES.find(x => x.id === challengeId);
-  if (isFull(c)) { showMsg("This challenge is full — pick another one.", "error"); return; }
-  if (existing) signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
-  signups[challengeId].push(name);
-  showMsg("You're signed up! Check your inbox for the full brief. 🎉", "success");
-  fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project, email });
+
+  if (isWaitlist) {
+    if (existingWaitlist) waitlists[existingWaitlist] = waitlists[existingWaitlist].filter(n => n.toLowerCase() !== name.toLowerCase());
+    if (!waitlists[challengeId]) waitlists[challengeId] = [];
+    waitlists[challengeId].push(name);
+    showMsg("You're on the waitlist! We'll let you know if a spot opens up.", "success");
+    fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project, email, status: "waitlist" });
+  } else {
+    if (existing) signups[existing] = signups[existing].filter(n => n.toLowerCase() !== name.toLowerCase());
+    signups[challengeId].push(name);
+    showMsg("You're signed up! Check your inbox for the full brief. 🎉", "success");
+    fetchSheet({ action: "signup", name, challenge: challengeId, project: c.project, email, status: "confirmed" });
+  }
   render();
+}
+
+function isWaitlisted(name, challengeId) {
+  return waitlists[challengeId] && waitlists[challengeId].map(n => n.toLowerCase()).includes(name.toLowerCase());
+}
+
+function getUserWaitlist(name) {
+  for (const id in waitlists) {
+    if (waitlists[id].map(n => n.toLowerCase()).includes(name.toLowerCase())) return id;
+  }
+  return null;
 }
 
 async function handleSelect(challengeId) {
@@ -418,17 +451,35 @@ async function handleSelect(challengeId) {
   if (!email) { showMsg("Please enter your RoboTUM email — we'll send you the full brief.", "error"); return; }
   if (!email.includes("@")) { showMsg("Please enter a valid email address.", "error"); return; }
   const existing = getUserChallenge(name);
+  const existingWaitlist = getUserWaitlist(name);
   const c = CHALLENGES.find(x => x.id === challengeId);
 
+  // Already signed up for this — remove
   if (existing === challengeId) {
     signups[challengeId] = signups[challengeId].filter(n => n.toLowerCase() !== name.toLowerCase());
     showMsg("You've been removed from: " + challengeId, "info");
-    fetchSheet({ action: "signup", name, challenge: "remove", project: "" });
+    fetchSheet({ action: "signup", name, challenge: "remove", project: "", status: "remove" });
     render();
-  } else {
-    if (isFull(c)) { showMsg("This challenge is full — pick another one.", "error"); return; }
-    showConfirmModal(challengeId, name, email);
+    return;
   }
+
+  // Already on waitlist for this — remove from waitlist
+  if (existingWaitlist === challengeId) {
+    waitlists[challengeId] = waitlists[challengeId].filter(n => n.toLowerCase() !== name.toLowerCase());
+    showMsg("You've been removed from the waitlist for: " + challengeId, "info");
+    fetchSheet({ action: "signup", name, challenge: "remove", project: "", status: "remove" });
+    render();
+    return;
+  }
+
+  // Challenge is full — show waitlist confirm
+  if (isFull(c)) {
+    showConfirmModal(challengeId, name, email, true);
+    return;
+  }
+
+  // Normal signup
+  showConfirmModal(challengeId, name, email, false);
 }
 
 let adminUnlocked = false;
